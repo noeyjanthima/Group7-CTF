@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="sut-secret" content="SUT_CS_2026">
+    <title>The Chipher Killer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Courier+Prime&display=swap"
+        rel="stylesheet">
+    <style>
+        /* (CSS เดิมทั้งหมด) */
+        :root {
+            --terminal-green: #00ff41;
+            --terminal-dark: #003b00;
+            --bg-black: #050505;
+            --alert-red: #ff3333;
+        }
+
+        body {
+            background-color: #000;
+            color: var(--terminal-green);
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            height: 100vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        #global-timer {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            color: #ff0000;
+            font-weight: bold;
+            border: 2px solid #ff0000;
+            padding: 5px 15px;
+            background: rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            z-index: 10000;
+            text-shadow: 0 0 5px red;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 999;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #hacked-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            height: 100%;
+            /* background-color: #000; Remove for matrix bg */
+            /* background-image: radial-gradient(circle, #200 0%, #000 90%); */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 0, 0, 0), rgba(255, 0, 0, 0.1) 50%, rgba(255, 0, 0, 0));
+            background-size: 100% 4px;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes scanline {
+            from {
+                transform: translateY(-100%);
+            }
+
+            to {
+                transform: translateY(100%);
+            }
+        }
+
+        .glitch {
+            font-size: 5rem;
+            font-weight: bold;
+            position: relative;
+            color: red;
+            letter-spacing: 5px;
+            z-index: 2;
+            margin: 0;
+            text-align: center;
+            text-shadow: 4px 4px 0px #000;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #00ffff;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ff00;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% {
+                clip: rect(70px, 9999px, 80px, 0);
+            }
+
+            100% {
+                clip: rect(10px, 9999px, 90px, 0);
+            }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% {
+                clip: rect(20px, 9999px, 60px, 0);
+            }
+
+            100% {
+                clip: rect(30px, 9999px, 70px, 0);
+            }
+        }
+
+        #countdown-big {
+            font-size: 5rem;
+            color: #ff0000;
+            font-weight: bold;
+            margin: 30px 0;
+            border: 4px solid #ff0000;
+            padding: 15px 40px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.4);
+            z-index: 2;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .hacker-btn {
+            background: black;
+            color: var(--terminal-green);
+            border: 2px solid var(--terminal-green);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 2;
+            text-transform: uppercase;
+            margin-top: 30px;
+        }
+
+        .hacker-btn:hover {
+            background: var(--terminal-green);
+            color: black;
+            box-shadow: 0 0 20px var(--terminal-green);
+        }
+
+        #skip-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: transparent;
+            color: #ff3333;
+            border: 1px solid #ff3333;
+            padding: 5px 15px;
+            font-family: inherit;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        #skip-btn:hover {
+            background: rgba(255, 51, 51, 0.2);
+            box-shadow: 0 0 10px #ff3333;
+        }
+
+        #story-screen,
+        #story-screen-2,
+        #story-screen-3 {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #fff;
+            font-size: 1.2rem;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 900;
+            overflow-y: auto;
+            background: transparent;
+        }
+
+
+        .container {
+            display: none;
+            width: 85%;
+            max-width: 900px;
+            margin: 80px auto 50px auto;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+            border: 1px solid var(--terminal-green);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .active {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #chapter-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color: #000; Remove to show global matrix bg */
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        #chapter-screen.fade-in {
+            opacity: 1;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--terminal-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0, 20, 0, 0.6);
+            border: 1px solid var(--terminal-green);
+            border-left: 5px solid var(--terminal-green);
+            color: #fff;
+            font-family: inherit;
+            font-size: 1.5rem;
+            padding: 15px;
+            outline: none;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+            border-color: red !important;
+            color: red !important;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(-10px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .terminal-btn {
+            margin-top: 25px;
+            width: 100%;
+            background: var(--terminal-green);
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .terminal-btn:hover {
+            background: #fff;
+            transform: scale(1.02);
+        }
+
+        .file-btn {
+            background: transparent;
+            border: 1px dashed var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-btn:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .error-log {
+            color: var(--alert-red);
+            font-size: 1rem;
+            margin-top: 15px;
+            min-height: 1.5em;
+            font-weight: bold;
+            text-shadow: 0 0 5px red;
+        }
+
+        #evidence-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notepad {
+            background: #fff;
+            color: #000;
+            padding: 40px;
+            width: 70%;
+            max-width: 600px;
+            font-family: 'Courier New', Courier, monospace;
+            position: relative;
+            transform: rotate(1deg);
+            box-shadow: 0 0 20px #000;
+        }
+
+        .notepad h2 {
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .code-snippet {
+            background: #eee;
+            padding: 10px;
+            border: 1px solid #999;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+
+        /* --- PAPER NOTE FOR MISSION 2 --- */
+        .paper-note {
+            background: #fdfbf7;
+            color: #222;
+            padding: 30px;
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            border: 1px solid #999;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            transform: rotate(-1.5deg);
+            margin: 20px auto 40px auto;
+            position: relative;
+            max-width: 650px;
+        }
+
+        .paper-note::before {
+            content: "";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px dashed rgba(255, 255, 255, 0.4);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .stamp {
+            border: 3px double #d00;
+            color: #d00;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: inline-block;
+            padding: 5px 15px;
+            transform: rotate(-5deg);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .paper-content ul li {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        .paper-content code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #d00;
+        }
+
+        /* --- HACKER POPUP ALERT --- */
+        #intrusion-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            width: 100%;
+            height: 100%;
+            /* background: rgba(0, 0, 0, 0.95); Removed to show global matrix bg */
+            display: flex;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .hacker-modal {
+            width: 500px;
+            background: #050505;
+            border: 1px solid #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+            padding: 30px;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: left;
+            position: relative;
+        }
+
+        .hacker-modal h1 {
+            color: #ff0000;
+            margin: 0 0 20px 0;
+            font-size: 2rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #ff0000;
+            padding-bottom: 10px;
+        }
+
+        .console-line {
+            color: #ff0000;
+            font-size: 1rem;
+            margin: 10px 0;
+        }
+
+        #hack-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .loader-bar {
+            width: 100%;
+            height: 8px;
+            background: #111;
+            margin-top: 20px;
+            border: 1px solid #111;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #00ff41;
+            width: 0%;
+            box-shadow: 0 0 10px #00ff41;
+            animation: fillBar 5s linear forwards;
+        }
+
+        @keyframes fillBar {
+            to {
+                width: 100%;
+            }
+        }
+
+        /* Bg Popups */
+        .bg-popup {
+            position: absolute;
+            background: #000;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            z-index: 1;
+            /* Behind main modal (which is static relative so we need to boost main modal z-index) */
+            box-shadow: 2px 2px 0px #500;
+            max-width: 200px;
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        /* --- SCHEDULE TABLE FOR MISSION 2 --- */
+        .schedule-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Share Tech Mono', sans-serif;
+            color: #000;
+            background: white;
+            font-size: 0.75rem;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid #fff;
+            padding: 8px 4px;
+            text-align: center;
+        }
+
+        .schedule-table th {
+            background-color: #444;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .schedule-table td:first-child {
+            background-color: #999;
+            color: #fff;
+            font-weight: bold;
+            width: 80px;
+        }
+
+        .class-cell {
+            background-color: #c0d3ff;
+            color: #003b7a;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .class-code {
+            color: #0076a8;
+        }
+
+        .room-code {
+            display: block;
+            margin-top: 2px;
+        }
+
+        .time-range {
+            font-weight: normal;
+            font-size: 0.7rem;
+        }
+
+        .input-hint {
+            display: block;
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 8px;
+            font-style: normal;
+        }
+    </style>
+</head>
+
+<body onload="initSystem()">
+    <canvas id="hack-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
+
+    <div id="intrusion-alert">
+
+        <div id="chaos-bg" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+        <div class="hacker-modal" style="z-index: 10;">
+            <h1>⚠️ SYSTEM COMPROMISED</h1>
+            <div class="console-line">> UNAUTHORIZED ACCESS DETECTED...</div>
+            <div class="console-line">> FIREWALL: FAILED</div>
+            <div class="console-line">> IP ADDRESS: TRACED</div>
+            <div class="console-line" style="margin-top:20px; color:#00ff41; text-align:center;">
+                > INITIALIZING RECOVERY PROTOCOL...
+            </div>
+            <div class="loader-bar">
+                <div class="bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="hidden-key" data-secret="B6102_ROOT_ACCESS" style="display: none;"></div>
+    <div id="global-timer">02:00:00</div>
+
+    <div id="hacked-overlay" style="display: none;">
+        <div class="scanlines"></div>
+        <h1 class="glitch" data-text="WELCOME CPE HACKER">WELCOME CPE HACKER</h1>
+        <p style="color:red; font-size: 1.2rem; margin-top: 20px;">[ LOCATION: B6102-A | TIME: 13:00 PM ]</p>
+        <p style="color:red; font-size: 1.2rem; margin-top: 20px;">พวกแกมีเวลาแค่ 2 ชั่วโมง ก่อนที่ฉันจะลงมือ :)</p>
+        <div id="countdown-big">02:00:00</div>
+        <button onclick="goToStep1()" class="hacker-btn">[ ENTER THE GAME ]</button>
+    </div>
+
+    <div id="chapter-screen">
+        <h1 style="font-size: 4rem; letter-spacing: 10px; font-family: 'Courier New', monospace;">The Cipher Killer</h1>
+    </div>
+
+    <div id="story-screen">
+        <button id="skip-btn" onclick="skipStory()">[ SKIP STORY ]</button>
+        <div id="story-content" style="white-space: pre-wrap; line-height: 1.6;">
+        </div>
+        <div id="mission-text" style="display:none; text-align:center; color:#0f0; margin: 40px 0; font-weight:bold;">
+            [MISSION START]</div>
+        <button id="story-btn" class="terminal-btn" onclick="goToHackedScreen()"
+            style="display:none; max-width: 300px; margin: 10px auto;">[ ACCESS MAINFRAME ]</button>
+    </div>
+
+    <div id="story-screen-2">
+        <button id="skip-btn-2" class="skip-btn-style" onclick="skipStory2()"
+            style="position:absolute; top:30px; left:30px; background:transparent; color:#ff3333; border:1px solid #ff3333; padding:5px 15px; font-family:inherit; cursor:pointer; z-index:1000; font-size:0.9rem;">[
+            SKIP STORY ]</button>
+        <div id="story-content-2" style="white-space: pre-wrap; line-height: 1.6;">
+        </div>
+        <button id="story-btn-2" class="hacker-btn" onclick="next('story-screen-2', 'step2')"
+            style="display:none; max-width: 300px; margin: 40px auto;">[ NEXT ]</button>
+    </div>
+
+    <div id="story-screen-3">
+        <button id="skip-btn-3" class="skip-btn-style" onclick="skipStory3()"
+            style="position:absolute; top:30px; left:30px; background:transparent; color:#ff3333; border:1px solid #ff3333; padding:5px 15px; font-family:inherit; cursor:pointer; z-index:1000; font-size:0.9rem;">[
+            SKIP STORY ]</button>
+        <div id="story-content-3" style="white-space: pre-wrap; line-height: 1.6;">
+        </div>
+        <button id="story-btn-3" class="hacker-btn" onclick="next('story-screen-3', 'step3'); startHackCheck();"
+            style="display:none; max-width: 300px; margin: 40px auto;">[ NEXT ]</button>
+    </div>
+
+    <div id="step1" class="container">
+        <div class="header-bar">
+            <span>MISSION 01: The Unmasking</span>
+            <span>SECURE_LEVEL: <span style="color:red;">SIMPLE</span></span>
+        </div>
+        <h3>TARGET: FILE_DECRYPTION </h3>
+        <p style="color:#aaa;">>> นี่คือไฟล์ที่ฆาตกรทิ้งเอาไว้ ถอดรหัสให้ได้ล่ะ มันไม่ง่ายนักหรอก :)</p>
+        <button onclick="openEvidence()" class="file-btn">
+            <span>📄</span> [FILE] Welcome_to_Hell.txt
+        </button>
+        <div style="margin-top: 30px;">
+            <label style="font-size: 0.8rem; color: #008800;">DECRYPTED_KEY:</label>
+            <input type="text" id="username" placeholder="Username?" autocomplete="off"
+                oninput="clearError('username', 'error-msg-1')">
+        </div>
+        <button class="terminal-btn" onclick="validateStep1()">SUBMIT ANSWER</button>
+        <div id="error-msg-1" class="error-log"></div>
+    </div>
+
+    <div id="evidence-modal">
+        <div class="notepad">
+            <span class="close-btn" onclick="closeEvidence()">X</span>
+            <h2>Welcome_to_Hell.txt</h2>
+            <div style="font-size: 1rem; line-height: 1.4;">
+                <p>ถึง พวกกระจอก ห้องB6102-A...</p>
+                <p>อยากรู้ Username งั้นเหรอ? ฉันไม่ได้เขียนมันไว้ในไฟล์นี้หรอก </p>
+                <p>ลองใช้ความรู้จากการเรียนวิศวะคอมมาใช้สิ</p>
+                <p>คำใบ้ : เอาคำใบ้ที่ได้ทั้งสองคำมาต่อกัน</p>
+                <div class="code-snippet">1. gcfiv = เลื่อนตัวอักษรไปข้างหน้า จำนวนหน้าลูกเต๋าลบ2</div>
+                <div class="code-snippet">2. 5d2d3ceb7abe552344276d47d36a8175b7aeb250a9bf0bf00e850cd23ecf2e43 = 2^8
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step2" class="container">
+        <div class="header-bar">
+            <span>MISSION 02: The Gatekeeper's Challenge</span>
+            <span>STATUS: <span style="color:red">LOCKED</span></span>
+        </div>
+        <h3>>>3-FACTOR AUTHENTICATION </h3>
+        <div class="schedule-container">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Day/Time</th>
+                        <th>9:00-10:00</th>
+                        <th>10:00-11:00</th>
+                        <th>11:00-12:00</th>
+                        <th>12:00-13:00</th>
+                        <th>13:00-14:00</th>
+                        <th>14:00-15:00</th>
+                        <th>15:00-16:00</th>
+                        <th>16:00-17:00</th>
+                        <th>17:00-18:00</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>จันทร์</td>
+                        <td></td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 3054</span>, 2<br>
+                            B5204<br>
+                            <span class="time-range">(09:00-12:00)</span>
+                        </td>
+                        <td></td>
+                        <td colspan="3" class="class-cell">
+                            <span class="class-code">ENG23 3032</span>, 2<br>
+                            B6503-A<br>
+                            <span class="time-range">(13:00-16:00)</span>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>อังคาร</td>
+                        <td></td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 3015</span>, 1<br>
+                            B1118<br>
+                            <span class="time-range">(10:00-12:00)</span>
+                        </td>
+                        <td></td>
+                        <td colspan="3" class="class-cell">
+                            <span class="class-code">ENG23 3054</span>, 2<br>
+                            F11-422.Software<br>
+                            <span class="time-range">(13:00-16:00)</span>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>พุธ</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td colspan="3" class="class-cell">
+                            <span class="class-code">ENG23 3032</span>, 2<br>
+                            F11-422.Software<br>
+                            <span class="time-range">(13:00-16:00)</span>
+                        </td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 4041</span>, 1<br>
+                            B6102-A<br>
+                            <span class="time-range">(16:00-18:00)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>พฤหัสบดี</td>
+                        <td></td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 3052</span>, 1<br>
+                            B1212<br>
+                            <span class="time-range">(10:00-12:00)</span>
+                        </td>
+                        <td></td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 4041</span>, 1<br>
+                            B6102-A<br>
+                            <span class="time-range">(13:00-15:00)</span>
+                        </td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 3015</span>, 1<br>
+                            B1128(SmartCR)<br>
+                            <span class="time-range">(15:00-17:00)</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>ศุกร์</td>
+                        <td></td>
+                        <td colspan="2" class="class-cell">
+                            <span class="class-code">ENG23 3052</span>, 1<br>
+                            B3103<br>
+                            <span class="time-range">(10:00-12:00)</span>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="input-group">
+            <label style="font-size: 0.8rem; color: #aaa;">COMBINED PASSWORD (Level1 + HiddenVar):</label>
+            <span class="input-hint">>> Hint: "Username จากด่านแรก + รหัสลับที่ซ่อนอยู่ในตารางเรียน"</span>
+            <input type="text" id="pass-in" placeholder="Ex: cybersecurity_xxxx" autocomplete="off"
+                oninput="clearError('pass-in', 'error-msg-2')">
+            <div style="margin-top: 15px;">
+                <label style="font-size: 0.8rem; color: #aaa;">SECURITY PIN:</label>
+                <span class="input-hint">>> Hint: "พวกแกต้องใช้คำสั่ง เพื่อขอรับรหัสฉุกเฉิน"</span>
+                <input type="number" id="pin-in" placeholder="PIN CODE" autocomplete="off"
+                    oninput="clearError('pin-in', 'error-msg-2')" style="letter-spacing: 5px;">
+            </div>
+            <div style="margin-top: 15px;">
+                <span class="input-hint" style="color: #880000;">สัญญาณต้องมาจาก 'อาคารเครื่องมือ' เท่านั้น :)</span>
+            </div>
+        </div>
+        <button class="terminal-btn" onclick="validateStep2()">EXECUTE LOGIN</button>
+        <div id="error-msg-2" class="error-log"></div>
+    </div>
+
+    <div id="step3" class="container">
+        <div class="header-bar">
+            <span>MISSION 03: The Hidden Evidence</span>
+            <span id="role-status">USER: <span style="color:red">GUEST</span></span>
+        </div>
+
+        <h3>SYSTEM_CORE </h3>
+
+        <div id="view-guest">
+            <p>> เข้าสู่ระบบสำเร็จ... ตรวจสอบสิทธิ์การเข้าถึง... ฮ่าาาาา เข้าได้แล้วยังไง? พวกแกเจออะไรรึยังน้า</p>
+            <p style="color:yellow; border: 1px dashed yellow; padding: 10px; margin: 20px 0;">
+                ⚠ ACCESS DENIED: User 'Guest' does not have permission to access database.
+            </p>
+            <p style="font-size:0.8rem; color:#aaa;">> Hint: ระบบเช็คตัวตนจาก <b>Cookies</b>...
+                คุณรู้นะว่าต้องทำยังไงให้เป็น <b>admin</b></p>
+        </div>
+
+        <div id="security-layer-check" style="display: none;">
+            <div style="background: #002200; padding: 15px; border-left: 3px solid #0f0; margin-bottom: 20px;">
+                <p style="margin:0; color:#0f0;">[✔] RBAC PASSED: Role is Admin.</p>
+                <p style="margin:0; color:red;">[!] SECURITY ALERT: COMPLIANCE CHECK FAILED.</p>
+            </div>
+
+            <div id="mac-error"
+                style="display:none; border: 1px solid red; padding: 10px; color: red; margin-bottom: 10px;">
+                > [MAC_ERROR]: Missing 'clearance' level.<br>
+                > Hint: <code>document.cookie = "clearance=top_secret"</code>
+            </div>
+
+            <div id="abac-error"
+                style="display: none; border: 1px solid red; padding: 10px; color: red; margin-bottom: 10px;">
+                > [ABAC_ERROR]: Invalid Department.<br>
+                > Hint: <code>localStorage.setItem('department', 'SUT_CPE')</code>
+            </div>
+
+            <div id="rule-error" style="display: none; border: 1px solid red; padding: 10px; color: red;">
+                > [RULE_ERROR]: Time-Based Policy Violation.<br>
+                > Access Window: 15:30 - 16:30 only.<br>
+                > Current Time: <span id="current-server-time"></span><br>
+                > Hint: ระบบนี้เช็คเวลาจากเครื่อง... Hacker อย่างเราควบคุมเวลาได้เสมอ!
+            </div>
+        </div>
+
+        <div id="view-admin" style="display: none; animation: slideUp 0.5s;">
+            <div style="background: #002200; padding: 15px; border-left: 3px solid #0f0; margin-bottom: 20px;">
+                <p style="margin:0; color:#0f0;">[✔] ALL SECURITY CHECKS PASSED.</p>
+            </div>
+
+            <div
+                style="border: 1px solid var(--terminal-green); padding: 15px; margin: 20px 0; background: rgba(0, 50, 0, 0.3);">
+                <h4 style="margin-top: 0; border-bottom: 1px dashed var(--terminal-green);">[FILE]:
+                    CONFIDENTIAL_DATA.txt</h4>
+                <p style="font-family: 'Courier New', monospace; font-size: 0.9rem; color: #ccc;">
+                    > [LOG]: User Admin (SUT_CPE/TopSecret) verified.<br>
+                    > [TIME]: Access granted within valid window.<br>
+                    > [GOAL]: ใช้ SQL Injection เพื่อปลดล็อก Database<br>
+                </p>
+            </div>
+
+            <p>ระบบป้องกันชั้นสุดท้าย: <b>SQL Authentication</b></p>
+            <div class="code-snippet" style="background: black; color: white; border: 1px solid #555;">
+                QUERY: SELECT * FROM secret_files WHERE password = '<span id="sql-display"
+                    style="color:yellow">...</span>'
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <span style="padding-top: 10px;">INPUT:</span>
+                <input type="text" id="sql-input" placeholder="' OR '1'='1"
+                    style="font-family: monospace; letter-spacing: 1px;" autocomplete="off"
+                    oninput="document.getElementById('sql-display').innerText = this.value">
+            </div>
+            <button class="terminal-btn" onclick="validateSQL()">INJECT DATABASE</button>
+            <div id="error-msg-sql" class="error-log"></div>
+        </div>
+    </div>
+
+    <div id="climax" class="container" style="border-color:#fff;">
+        <h1 style="text-align:center; color: white;">CASE SOLVED</h1>
+        <p style="text-align: center;">> สถานที่ก่อเหตุ: <span style="color:#0f0">B6102-A</span></p>
+        <div
+            style="background:#fff; color:#000; padding:20px; text-align:center; font-weight:bold; border:4px solid var(--terminal-green); margin-top: 20px; transform: rotate(-1deg);">
+            FLAG{เหยื่อรายต่อไป : อาจารย์ปริญญ์}
+        </div>
+        <button class="terminal-btn" onclick="location.reload()"
+            style="background: #333; color: white; margin-top: 40px;">CLOSE CASE</button>
+    </div>
+
+    <script>
+        const TARGET_LAT = 14.881474;
+        const TARGET_LNG = 102.015555;
+        const _SYS_ID = "_4041";
+
+        let matrixInterval;
+        let chaosInterval;
+        let typingTimer;
+
+        function initSystem() {
+            startMatrixBg();
+            playHackerSound();
+
+            // Start Chaos Popups in Background
+            chaosInterval = setInterval(spawnChaos, 200);
+
+            // Auto-dismiss after 5 seconds to match the loading bar
+            setTimeout(() => {
+                document.getElementById('intrusion-alert').style.display = 'none';
+
+                // Show Chapter 1 Screen
+                const chapScreen = document.getElementById('chapter-screen');
+                chapScreen.style.display = 'flex';
+
+                // Fade In
+                setTimeout(() => {
+                    chapScreen.classList.add('fade-in');
+                }, 100);
+
+                // Wait then Fade Out & Show Story
+                setTimeout(() => {
+                    chapScreen.classList.remove('fade-in');
+                    chapScreen.style.opacity = '0';
+
+                    setTimeout(() => {
+                        chapScreen.style.display = 'none';
+                        // if (matrixInterval) clearInterval(matrixInterval); // Keep running
+                        // We do NOT clear matrixInterval here so it persists.
+
+                        if (chaosInterval) clearInterval(chaosInterval);
+
+                        // Show Story Screen (Transparent background now)
+                        document.getElementById('story-screen').style.display = 'flex';
+                        typeWriter(storyText, 0, 'story-content', 'story-btn', 'skip-btn', 'mission-text');
+                    }, 2000); // Wait for fade out (2s)
+                }, 4000); // Display time (4s)
+
+            }, 5000);
+
+            startCountdown();
+        }
+
+        function spawnChaos() {
+            const container = document.getElementById('chaos-bg');
+            if (!container) return;
+
+            const msgs = ["ERROR", "DELETING...", "CORRUPT", "FAILED", "BREACH", "SYSTEM HALT"];
+            const div = document.createElement('div');
+            div.className = 'bg-popup';
+            div.innerHTML = `<b>[!]: ${msgs[Math.floor(Math.random() * msgs.length)]}</b><br>Code: ${Math.floor(Math.random() * 999)}`;
+
+            // Random Position
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 50);
+
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+
+            container.appendChild(div);
+        }
+
+        function playHackerSound() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.type = 'square';
+            // Volume reduced significantly (0.02)
+            gain.gain.value = 0;
+
+            // Pattern: "Beep... Beep... Beep..." (Add Add Add)
+            // Beep every 0.3 seconds
+            const beepLen = 0.1;
+            const gap = 0.3;
+            const repeats = 15; // Covers ~5 seconds
+
+            osc.frequency.setValueAtTime(800, now); // Standard alarm tone 800Hz
+
+            for (let i = 0; i < repeats; i++) {
+                const start = now + (i * gap);
+                const end = start + beepLen;
+
+                // Quick attack and release for "Beep" sound
+                gain.gain.setValueAtTime(0.02, start);
+                gain.gain.setValueAtTime(0, end);
+            }
+
+            osc.start(now);
+            osc.stop(now + (repeats * gap));
+
+            // AUTO-PLAY FIX: If browser blocks audio, wait for first interaction
+            if (ctx.state === 'suspended') {
+                const unlockAudio = () => {
+                    ctx.resume().then(() => {
+                        console.log("Audio Resumed by User Interaction");
+                        // Reset interactions
+                        document.removeEventListener('click', unlockAudio);
+                        document.removeEventListener('keydown', unlockAudio);
+                    });
+                };
+                document.addEventListener('click', unlockAudio);
+                document.addEventListener('keydown', unlockAudio);
+            } else {
+                console.log("Audio playing immediately");
+            }
+
+            // Cleanup context after sound finishes
+            setTimeout(() => {
+                if (ctx.state !== 'closed') ctx.close();
+            }, 6000);
+        }
+
+        function startMatrixBg() {
+            const canvas = document.getElementById('hack-bg');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const chars = "01";
+            const fontSize = 16;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+
+            matrixInterval = setInterval(() => {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ff0000"; // Red Matrix
+                ctx.font = fontSize + "px monospace";
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }, 50);
+        }
+
+        function startCountdown() {
+            document.cookie = "user_role=guest; path=/";
+            document.cookie = "clearance=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            localStorage.removeItem("department");
+
+            let time = 120 * 60;
+            const bigTimer = document.getElementById('countdown-big');
+            const globalTimer = document.getElementById('global-timer');
+            setInterval(() => {
+                const hours = Math.floor(time / 3600);
+                const minutes = Math.floor((time % 3600) / 60);
+                const seconds = time % 60;
+                const t = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                bigTimer.innerText = t; globalTimer.innerText = t;
+                if (time > 0) time--;
+            }, 1000);
+        }
+
+        function getEmergencyPIN() {
+            console.warn("[SYSTEM]: ACCESS GRANTED.");
+            console.log("%c >> PIN CODE: 6102", "background: green; color: white; padding: 5px; font-weight: bold;");
+            return "Connection Secure.";
+        }
+
+        const storyText = `ในวันที่ 15 มกราคม 2026 เวลา 13:00 น. บรรยากาศภายในห้อง B6102-A ได้ถูกทำลายลง หน้าจอคอมพิวเตอร์ทุกเครื่อง\nถูกแฮกพร้อมกัน ปรากฏภาพของชายสวมหน้ากากสีดำคนหนึ่งนั่งอยู่ในห้องมืดที่มีนาฬิกานับถอยหลัง 120 นาที\n\nเขากล่าวทักทายทุกคนด้วยน้ำเสียงเย้ยหยัน "ฉันได้เลือกเป้าหมายและสถานที่ก่อเหตุครั้งต่อไปเอาไว้แล้ว ถ้าพวกแกคิดว่าแน่ \nก็ตามหาและช่วยชีวิตคนคนนั้นซะ! แต่ก็ยากหน่อยนะ ระบบที่ฉันทำไว้มันไม่ได้ทำไว้ให้พวกกระจอกแบบพวกแกเข้าไปได้ง่ายๆหรอก \nทำให้ได้ล่ะคุณตำรวจ :)" \n\nฆาตกรท้าทายให้เจ้าหน้าที่ลองก้าวเข้าสู่โลกของเขาเพื่อหยุดยั้งโศกนาฏกรรมที่กำลังจะเกิดขึ้น\n\nฆาตกรทิ้งปริศนาไว้ในไฟล์ชื่อ Welcome_to_Hell.txt ซึ่งซ่อนอยู่ในเครื่อง Mainframe ของมหาวิทยาลัย ภายในนั้นมีรหัสลับ\nที่ถูกเข้ารหัสไว้อย่างซับซ้อน พวกคุณจะต้องหารหัสลับนั้น เพื่อให้ได้มาซึ่ง username ของฆาตกร เมื่อลองกดเข้าไปดูจะเจอคำใบ้ :)`;
+
+        const storyText2 = `"อ่าา รู้ Username ของฉันจนได้ คิดว่ามันจะง่ายๆแค่นี้หรอ หึ... แค่นี้น่ะเหรอที่พวกแกเรียกว่าการสืบสวน? \nรู้แค่นี้ก็ทำอะไรไม่ได้หรอก ประตูสู่ความลับของฉันอยู่ตรงหน้าแล้ว แต่มันไม่ได้เปิดรับคนโง่หรอกนะ"\n\n"รหัสผ่านที่พวกแกอยากได้น่ะ ไม่ได้้มันมาง่ายๆหรอก แต่ฉันก็ไม่ใจร้ายขนาดที่ไม่ทิ้งคำใบ้ไว้ให้พวกกระจอกแบบพวกแกหรอกนะ \nก็ลองหาดูเอาแล้วกัน :) "`;
+
+        const storyText3 = `"ว้าวว เข้ามาได้ซะแล้ว ก็ถือว่าพอใช้ได้ แล้วยังไง? เจออะไรมั้ยล่ะ :)"`;
+
+        function goToHackedScreen() {
+            document.getElementById('story-screen').style.display = 'none';
+            document.getElementById('hacked-overlay').style.display = 'flex';
+            document.getElementById('global-timer').style.display = 'block';
+        }
+
+        function typeWriter(text, i, elementId, btnId, skipBtnId, missionTxtId) {
+            if (i < text.length) {
+                document.getElementById(elementId).innerHTML += text.charAt(i);
+                typingTimer = setTimeout(() => typeWriter(text, i + 1, elementId, btnId, skipBtnId, missionTxtId), 25);
+            } else {
+                if (btnId) document.getElementById(btnId).style.display = "block";
+                if (missionTxtId) document.getElementById(missionTxtId).style.display = "block";
+                if (skipBtnId) document.getElementById(skipBtnId).style.display = "none";
+            }
+        }
+
+        function skipStory() {
+            clearTimeout(typingTimer);
+            document.getElementById("story-content").innerHTML = storyText;
+            document.getElementById("story-btn").style.display = "block";
+            document.getElementById("mission-text").style.display = "block";
+            document.getElementById("skip-btn").style.display = "none";
+        }
+
+        function skipStory2() {
+            clearTimeout(typingTimer);
+            document.getElementById("story-content-2").innerHTML = storyText2;
+            document.getElementById("story-btn-2").style.display = "block";
+            document.getElementById("skip-btn-2").style.display = "none";
+        }
+
+        function skipStory3() {
+            clearTimeout(typingTimer);
+            document.getElementById("story-content-3").innerHTML = storyText3;
+            document.getElementById("story-btn-3").style.display = "block";
+            document.getElementById("skip-btn-3").style.display = "none";
+        }
+
+        function playTypeSound() {
+            // Lazy load audio context to avoid blocking or policies until needed
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const t = audioCtx.currentTime;
+
+            // 1. The "Click" (High frequency noise)
+            const bufferSize = audioCtx.sampleRate * 0.1; // 0.1 sec buffer
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1; // White noise
+            }
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 1000 + Math.random() * 500; // Randomize tone
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.08, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noise.start(t);
+
+            // 2. The "Thump" (Low frequency mechanical switch hit)
+            const osc = audioCtx.createOscillator();
+            const oscGain = audioCtx.createGain();
+
+            osc.connect(oscGain);
+            oscGain.connect(audioCtx.destination);
+
+            // Subtle change in pitch for variety
+            osc.frequency.setValueAtTime(200 + Math.random() * 50, t);
+
+            oscGain.gain.setValueAtTime(0.05, t);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+            osc.start(t);
+            osc.stop(t + 0.1);
+        }
+
+        function next(current, target) {
+            document.getElementById(current).style.display = 'none';
+            document.getElementById(current).classList.remove('active');
+            document.getElementById(target).classList.add('active');
+        }
+        function goToStep1() {
+            document.getElementById('hacked-overlay').style.display = 'none';
+            document.getElementById('step1').classList.add('active');
+        }
+        function openEvidence() { document.getElementById('evidence-modal').style.display = 'flex'; }
+        function closeEvidence() { document.getElementById('evidence-modal').style.display = 'none'; }
+        function showError(inputId, msgId, text) {
+            const input = document.getElementById(inputId);
+            document.getElementById(msgId).innerHTML = `> [ERROR]: ${text}`;
+            if (input) { input.classList.add('shake'); setTimeout(() => { input.classList.remove('shake'); }, 500); }
+        }
+        function clearError(inputId, msgId) {
+            document.getElementById(msgId).innerHTML = "";
+            if (inputId) document.getElementById(inputId).classList.remove('shake');
+        }
+
+        function validateStep1() {
+            const val = document.getElementById('username').value.trim().toLowerCase();
+            if (val === "cybersecurity") {
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('story-screen-2').style.display = 'flex';
+                typeWriter(storyText2, 0, 'story-content-2', 'story-btn-2', 'skip-btn-2');
+            }
+            else showError('username', 'error-msg-1', 'INCORRECT KEYWORD (Check Console Logs)');
+        }
+
+        function validateStep2() {
+            const pass = document.getElementById('pass-in').value.trim();
+            const pin = document.getElementById('pin-in').value.trim();
+            const correctPass = "CyberSecurity" + _SYS_ID;
+            if (pass !== correctPass || pin !== "6102") {
+                showError('pass-in', 'error-msg-2', 'ACCESS DENIED: Check Password / PIN'); return;
+            }
+            const errorLog = document.getElementById('error-msg-2');
+            errorLog.style.color = "yellow";
+            errorLog.innerText = ">> SATELLITE TRIANGULATION IN PROGRESS...";
+            if (!navigator.geolocation) { errorLog.innerText = "ERROR: Browser does not support Geolocation."; return; }
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = parseFloat(pos.coords.latitude.toFixed(6));
+                const lng = parseFloat(pos.coords.longitude.toFixed(6));
+                console.log(`[CHECK]: Current ${lat}, ${lng} VS Target ${TARGET_LAT}, ${TARGET_LNG}`);
+                if (Math.abs(lat - TARGET_LAT) <= 0.0005 && Math.abs(lng - TARGET_LNG) <= 0.0005) {
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('story-screen-3').style.display = 'flex';
+                    typeWriter(storyText3, 0, 'story-content-3', 'story-btn-3', 'skip-btn-3');
+                } else {
+                    errorLog.style.color = "red";
+                    errorLog.innerText = `> [ACCESS DENIED]: Incorrect Location (${lat}, ${lng})`;
+                }
+            }, (err) => { errorLog.style.color = "red"; errorLog.innerText = `> [GPS ERROR]: ${err.message}`; });
+        }
+
+        // --- MISSION 3 LOGIC (FULL SECURITY) ---
+        function startHackCheck() {
+            const interval = setInterval(() => {
+                // 1. RBAC Check (Role)
+                if (!document.cookie.includes("user_role=admin")) {
+                    return; // ยังเป็น Guest อยู่ ไม่ต้องทำอะไร
+                }
+
+                // Hide Guest View
+                document.getElementById('view-guest').style.display = 'none';
+
+                // 2. MAC Check (Clearance)
+                if (!document.cookie.includes("clearance=top_secret")) {
+                    showErrorState('mac-error');
+                    return;
+                }
+
+                // 3. ABAC Check (Department)
+                if (localStorage.getItem("department") !== "SUT_CPE") {
+                    showErrorState('abac-error');
+                    return;
+                }
+
+                // 4. Rule-Based Check (Time: 15:30 - 16:30)
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const startWindow = 15 * 60 + 30; // 15:30 = 930
+                const endWindow = 16 * 60 + 30;   // 16:30 = 990
+
+                if (currentMinutes < startWindow || currentMinutes > endWindow) {
+                    showErrorState('rule-error');
+                    document.getElementById('current-server-time').innerText = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    return;
+                }
+
+                // 5. All Passed -> Show File & SQL
+                document.getElementById('security-layer-check').style.display = 'none';
+                document.getElementById('view-admin').style.display = 'block';
+                document.getElementById('view-admin').classList.add('active');
+
+                const roleStatus = document.getElementById('role-status');
+                if (roleStatus) roleStatus.innerHTML = 'USER: <span style="color:#00ff41">ADMIN [FULL_ACCESS]</span>';
+
+                clearInterval(interval);
+            }, 1000);
+        }
+
+        function showErrorState(errorId) {
+            document.getElementById('security-layer-check').style.display = 'block';
+            document.getElementById('mac-error').style.display = 'none';
+            document.getElementById('abac-error').style.display = 'none';
+            document.getElementById('rule-error').style.display = 'none';
+            document.getElementById(errorId).style.display = 'block';
+        }
+
+        function validateSQL() {
+            const input = document.getElementById('sql-input').value;
+            if (input.includes("' OR '1'='1") || input.includes("' OR 1=1")) showClimax();
+            else {
+                const el = document.getElementById('error-msg-sql');
+                el.innerText = "> [ACCESS DENIED]: Invalid Query Syntax";
+                el.classList.add('shake');
+                setTimeout(() => el.classList.remove('shake'), 500);
+            }
+        }
+        function showClimax() { next('step3', 'climax'); }
+    </script>
+</body>
+
+</html>
