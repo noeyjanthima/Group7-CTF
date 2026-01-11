@@ -651,6 +651,141 @@
             margin-bottom: 8px;
             font-style: normal;
         }
+
+        /* --- FOLDER VIEW STYLES --- */
+        .folder-container {
+            border: 1px solid #333;
+            background: rgba(0, 10, 0, 0.4);
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .folder-header {
+            background: #222;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .breadcrumb {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb span {
+            color: var(--terminal-green);
+        }
+
+        .folder-content {
+            padding: 40px 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            opacity: 0.2;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .empty-text {
+            color: #555;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .system-status-bar {
+            border-top: 1px solid #333;
+            padding: 5px 15px;
+            font-size: 0.7rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 20px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            width: 150px;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--terminal-green);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .file-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        }
+
+        .file-name {
+            font-size: 0.8rem;
+            color: #fff;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        /* --- STAMP ANIMATION --- */
+        .top-secret-stamp {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            transform: rotate(-20deg);
+            border: 5px solid #ff0000;
+            color: #ff0000;
+            font-size: 2.5rem;
+            font-weight: 900;
+            padding: 5px 20px;
+            text-transform: uppercase;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            font-family: 'Impact', sans-serif;
+            letter-spacing: 3px;
+            background: rgba(255, 0, 0, 0.05);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+
+        @keyframes stamp-animation {
+            0% {
+                opacity: 0;
+                transform: rotate(-45deg) scale(5);
+            }
+
+            85% {
+                opacity: 0.9;
+                transform: rotate(-20deg) scale(1);
+            }
+
+            100% {
+                opacity: 0.8;
+                transform: rotate(-20deg) scale(1);
+            }
+        }
+
+        #climax.active .top-secret-stamp {
+            animation: stamp-animation 0.4s cubic-bezier(.17, .84, .44, 1) forwards;
+            animation-delay: 0.6s;
+        }
     </style>
 </head>
 
@@ -875,12 +1010,12 @@
                 oninput="clearError('pass-in', 'error-msg-2')">
             <div style="margin-top: 15px;">
                 <label style="font-size: 0.8rem; color: #aaa;">SECURITY PIN:</label>
-                <span class="input-hint">>> Hint: "พวกแกต้องใช้คำสั่ง เพื่อขอรับรหัสฉุกเฉิน"</span>
+                <span class="input-hint">>> Hint: "พวกแกต้องใช้คำสั่ง เพื่อขอรับรหัสฉุกเฉิน(EmergencyPIN)"</span>
                 <input type="number" id="pin-in" placeholder="PIN CODE" autocomplete="off"
                     oninput="clearError('pin-in', 'error-msg-2')" style="letter-spacing: 5px;">
             </div>
             <div style="margin-top: 15px;">
-                <span class="input-hint" style="color: #880000;">สัญญาณต้องมาจาก 'อาคารเครื่องมือ' เท่านั้น :)</span>
+                <span class="input-hint" style="color: #880000;">สัญญาณต้องมาจาก 'อาคารเครื่องมือ 11' เท่านั้น :)</span>
             </div>
         </div>
         <button class="terminal-btn" onclick="validateStep2()">EXECUTE LOGIN</button>
@@ -895,79 +1030,68 @@
 
         <h3>SYSTEM_CORE </h3>
 
-        <div id="view-guest">
-            <p>> เข้าสู่ระบบสำเร็จ... ตรวจสอบสิทธิ์การเข้าถึง... ฮ่าาาาา เข้าได้แล้วยังไง? พวกแกเจออะไรรึยังน้า</p>
-            <p style="color:yellow; border: 1px dashed yellow; padding: 10px; margin: 20px 0;">
-                ⚠ ACCESS DENIED: User 'Guest' does not have permission to access database.
-            </p>
-            <p style="font-size:0.8rem; color:#aaa;">> Hint: ระบบเช็คตัวตนจาก <b>Cookies</b>...
-                คุณรู้นะว่าต้องทำยังไงให้เป็น <b>admin</b></p>
-        </div>
-
-        <div id="security-layer-check" style="display: none;">
-            <div style="background: #002200; padding: 15px; border-left: 3px solid #0f0; margin-bottom: 20px;">
-                <p style="margin:0; color:#0f0;">[✔] RBAC PASSED: Role is Admin.</p>
-                <p style="margin:0; color:red;">[!] SECURITY ALERT: COMPLIANCE CHECK FAILED.</p>
+        <div id="mission3-folder">
+            <div class="folder-container">
+                <div class="folder-header">
+                    <span style="color:#ffcc00;">📁</span>
+                    <div class="breadcrumb">STORAGE > <span>SECRET_FILES</span></div>
+                </div>
+                <div id="folder-content" class="folder-content">
+                    <!-- Initial State: Guest (Empty) -->
+                    <div class="empty-icon">📂</div>
+                    <div class="empty-text">0 files found in this directory.</div>
+                    <p style="color:#aa0000; margin-top: 20px; font-size: 0.85rem;">
+                        > [SYSTEM_INFO]: ยินดีต้อนรับเข้าสู่ระบบ... แต่ดูเหมือนโฟลเดอร์นี้จะว่างเปล่านะ :)
+                    </p>
+                </div>
+                <div class="system-status-bar">
+                    <span id="folder-total">Total: 0 KB</span>
+                    <span id="folder-access">Access: READ_ONLY</span>
+                </div>
             </div>
 
-            <div id="mac-error"
-                style="display:none; border: 1px solid red; padding: 10px; color: red; margin-bottom: 10px;">
-                > [MAC_ERROR]: Missing 'clearance' level.<br>
-                > Hint: <code>document.cookie = "clearance=top_secret"</code>
+            <div id="security-layer-check" style="display: none;">
+                <div id="mac-error"
+                    style="display:none; border: 1px solid red; padding: 10px; color: red; margin-bottom: 10px;">
+                    > [MAC_ERROR]: Missing 'clearance' level.<br>
+                    > Hint: "พวกแกได้เอาคุกกี้ที่เป็นระดับพรีเมี่ยม 'top_secret' มารึเปล่าล่ะ"
+                </div>
+
+                <div id="abac-error"
+                    style="display:none; border: 1px solid red; padding: 10px; color: red; margin-bottom: 10px;">
+                    > [ABAC_ERROR]: Invalid Department.<br>
+                    > Hint: "พวกแกมาจากหน่วยงานไหน? สังกัด 'SUT_CPE' รึเปล่า"
+                </div>
+
+                <div id="rule-error" style="display: none; border: 1px solid red; padding: 10px; color: red;">
+                    > [RULE_ERROR]: Out of Access Hours.<br>
+                    > ฮ่าา รู้มาถึงตรงนี้ พวกแกก็เปิดไม่ได้หรอก ตอนนี้มันกี่โมงล่ะ :)<br>
+                    > Access Window: 15:30 - 16:30 only.<br>
+                    > Current Time: <span id="current-server-time"></span><br>
+                    > Hint: ระบบนี้เช็คเวลาจากเครื่อง... Hacker อย่างเราควบคุมเวลาได้เสมอ!
+                </div>
             </div>
 
-            <div id="abac-error"
-                style="display: none; border: 1px solid red; padding: 10px; color: red; margin-bottom: 10px;">
-                > [ABAC_ERROR]: Invalid Department.<br>
-                > Hint: <code>localStorage.setItem('department', 'SUT_CPE')</code>
-            </div>
-
-            <div id="rule-error" style="display: none; border: 1px solid red; padding: 10px; color: red;">
-                > [RULE_ERROR]: Time-Based Policy Violation.<br>
-                > Access Window: 15:30 - 16:30 only.<br>
-                > Current Time: <span id="current-server-time"></span><br>
-                > Hint: ระบบนี้เช็คเวลาจากเครื่อง... Hacker อย่างเราควบคุมเวลาได้เสมอ!
-            </div>
-        </div>
-
-        <div id="view-admin" style="display: none; animation: slideUp 0.5s;">
-            <div style="background: #002200; padding: 15px; border-left: 3px solid #0f0; margin-bottom: 20px;">
-                <p style="margin:0; color:#0f0;">[✔] ALL SECURITY CHECKS PASSED.</p>
-            </div>
-
-            <div
-                style="border: 1px solid var(--terminal-green); padding: 15px; margin: 20px 0; background: rgba(0, 50, 0, 0.3);">
-                <h4 style="margin-top: 0; border-bottom: 1px dashed var(--terminal-green);">[FILE]:
-                    CONFIDENTIAL_DATA.txt</h4>
-                <p style="font-family: 'Courier New', monospace; font-size: 0.9rem; color: #ccc;">
-                    > [LOG]: User Admin (SUT_CPE/TopSecret) verified.<br>
-                    > [TIME]: Access granted within valid window.<br>
-                    > [GOAL]: ใช้ SQL Injection เพื่อปลดล็อก Database<br>
+            <div id="guest-hint"
+                style="background: rgba(255, 255, 0, 0.05); border-left: 3px solid yellow; padding: 15px; margin: 20px 0;">
+                <p style="margin:0; color:yellow; font-weight:bold;">⚠ ACCESS RESTRICTED</p>
+                <p style="margin:5px 0 0 0; color:#ccc; font-size:0.9rem;">
+                    สิทธิ์ระดับ Guest ไม่สามารถมองเห็นไฟล์ที่ถูกซ่อนไว้โดยระบบความปลอดภัยขั้นสูง (RBAC) ได้
                 </p>
             </div>
 
-            <p>ระบบป้องกันชั้นสุดท้าย: <b>SQL Authentication</b></p>
-            <div class="code-snippet" style="background: black; color: white; border: 1px solid #555;">
-                QUERY: SELECT * FROM secret_files WHERE password = '<span id="sql-display"
-                    style="color:yellow">...</span>'
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <span style="padding-top: 10px;">INPUT:</span>
-                <input type="text" id="sql-input" placeholder="' OR '1'='1"
-                    style="font-family: monospace; letter-spacing: 1px;" autocomplete="off"
-                    oninput="document.getElementById('sql-display').innerText = this.value">
-            </div>
-            <button class="terminal-btn" onclick="validateSQL()">INJECT DATABASE</button>
-            <div id="error-msg-sql" class="error-log"></div>
+            <p id="rbac-hint" style="font-size:0.8rem; color:#aaa;">> Hint: พวกแกต้องใช้ <b>คุกกี้</b>... คงรู้นะว่าต้องทำยังไงให้เป็น <b>admin</b></p>
         </div>
     </div>
 
     <div id="climax" class="container" style="border-color:#fff;">
+        <div class="top-secret-stamp">TOP SECRET</div>
+
         <h1 style="text-align:center; color: white;">CASE SOLVED</h1>
         <p style="text-align: center;">> สถานที่ก่อเหตุ: <span style="color:#0f0">B6102-A</span></p>
         <div
             style="background:#fff; color:#000; padding:20px; text-align:center; font-weight:bold; border:4px solid var(--terminal-green); margin-top: 20px; transform: rotate(-1deg);">
-            FLAG{เหยื่อรายต่อไป : อาจารย์ปริญญ์}
+            เหยื่อรายต่อไป : อาจารย์ ดร.ปริญญ์ ศรเลิศล้ำวาณิช  
         </div>
         <button class="terminal-btn" onclick="location.reload()"
             style="background: #333; color: white; margin-top: 40px;">CLOSE CASE</button>
@@ -981,6 +1105,7 @@
         let matrixInterval;
         let chaosInterval;
         let typingTimer;
+        let audioCtx; // Global audio context
 
         function initSystem() {
             startMatrixBg();
@@ -1169,7 +1294,7 @@
         function typeWriter(text, i, elementId, btnId, skipBtnId, missionTxtId) {
             if (i < text.length) {
                 document.getElementById(elementId).innerHTML += text.charAt(i);
-                typingTimer = setTimeout(() => typeWriter(text, i + 1, elementId, btnId, skipBtnId, missionTxtId), 25);
+                typingTimer = setTimeout(() => typeWriter(text, i + 1, elementId, btnId, skipBtnId, missionTxtId), 60);
             } else {
                 if (btnId) document.getElementById(btnId).style.display = "block";
                 if (missionTxtId) document.getElementById(missionTxtId).style.display = "block";
@@ -1281,7 +1406,7 @@
         function validateStep2() {
             const pass = document.getElementById('pass-in').value.trim();
             const pin = document.getElementById('pin-in').value.trim();
-            const correctPass = "CyberSecurity" + _SYS_ID;
+            const correctPass = "cybersecurity" + _SYS_ID;
             if (pass !== correctPass || pin !== "6102") {
                 showError('pass-in', 'error-msg-2', 'ACCESS DENIED: Check Password / PIN'); return;
             }
@@ -1312,8 +1437,11 @@
                     return; // ยังเป็น Guest อยู่ ไม่ต้องทำอะไร
                 }
 
-                // Hide Guest View
-                document.getElementById('view-guest').style.display = 'none';
+                // Update Role display and Hint
+                document.getElementById('guest-hint').style.display = 'none';
+                document.getElementById('rbac-hint').style.display = 'none';
+                const roleStatus = document.getElementById('role-status');
+                if (roleStatus) roleStatus.innerHTML = 'USER: <span style="color:#00ff41">ADMIN</span>';
 
                 // 2. MAC Check (Clearance)
                 if (!document.cookie.includes("clearance=top_secret")) {
@@ -1339,13 +1467,23 @@
                     return;
                 }
 
-                // 5. All Passed -> Show File & SQL
+                // 5. All Passed -> Show Secret File in Folder
                 document.getElementById('security-layer-check').style.display = 'none';
-                document.getElementById('view-admin').style.display = 'block';
-                document.getElementById('view-admin').classList.add('active');
 
-                const roleStatus = document.getElementById('role-status');
                 if (roleStatus) roleStatus.innerHTML = 'USER: <span style="color:#00ff41">ADMIN [FULL_ACCESS]</span>';
+
+                // Change Folder Content to show the File
+                const content = document.getElementById('folder-content');
+                content.innerHTML = `
+                    <div class="file-item" onclick="showClimax()">
+                        <div class="file-icon">📄</div>
+                        <div class="file-name">CONFIDENTIAL_DATA.txt</div>
+                        <div style="font-size:0.6rem; color:var(--terminal-green); margin-top:5px;">[CLICK TO OPEN]</div>
+                    </div>
+                `;
+
+                document.getElementById('folder-total').innerText = 'Total: 1.2 MB';
+                document.getElementById('folder-access').innerText = 'Access: FULL_CONTROL';
 
                 clearInterval(interval);
             }, 1000);
@@ -1359,17 +1497,38 @@
             document.getElementById(errorId).style.display = 'block';
         }
 
-        function validateSQL() {
-            const input = document.getElementById('sql-input').value;
-            if (input.includes("' OR '1'='1") || input.includes("' OR 1=1")) showClimax();
-            else {
-                const el = document.getElementById('error-msg-sql');
-                el.innerText = "> [ACCESS DENIED]: Invalid Query Syntax";
-                el.classList.add('shake');
-                setTimeout(() => el.classList.remove('shake'), 500);
-            }
+        function playDeathSound() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, t);
+            osc.frequency.exponentialRampToValueAtTime(20, t + 2); // ความเร็วรอบตก
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(400, t);
+            filter.frequency.linearRampToValueAtTime(50, t + 2);
+
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 2);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(t);
+            osc.stop(t + 2);
         }
-        function showClimax() { next('step3', 'climax'); }
+
+        function showClimax() {
+            playDeathSound();
+            next('step3', 'climax');
+        }
     </script>
 </body>
 
